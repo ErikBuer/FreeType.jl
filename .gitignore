@@ -1,3 +1,5 @@
 deps/deps.jl
 deps/usr*
 build.log
+
+Manifest.toml
