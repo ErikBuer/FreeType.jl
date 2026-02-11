@@ -6,7 +6,7 @@ using Test
 # Initialize FreeType library
 ft_library = Ref{FT_Library}()
 
-@testset "Render Emoji" begin
+@testset "Render Outline Emoji" begin
 
     function find_font(font_name::String)
         # Common font directories on different platforms
@@ -115,7 +115,7 @@ ft_library = Ref{FT_Library}()
     end
 
     # Try to find Noto Emoji font
-    font_name = "fonts-symbola"#"Noto Emoji"
+    font_name = "Symbola"
     font_path = find_font(font_name)
     if font_path === nothing
         @error "Could not find $font_name font. Please install it or specify another emoji font."
@@ -127,7 +127,7 @@ ft_library = Ref{FT_Library}()
     face = face_ref[]
 
     # Test with various emoji
-    test_emoji = ['😀', '🎨', '🚀', '❤', '🌈']
+    test_emoji = ['😀', '🎨', '🚀', '❤', 'Ω']
 
     for (i, emoji) in enumerate(test_emoji)
 
@@ -138,12 +138,7 @@ ft_library = Ref{FT_Library}()
         glyph_index = FT_Get_Char_Index(face, UInt(emoji))
 
 
-
-        # Load the glyph with FT_LOAD_COLOR flag to get colored rendering
-        # Also use FT_LOAD_RENDER to automatically render the glyph
-        load_flags = FT_LOAD_COLOR | FT_LOAD_RENDER
-        #load_flags = FT_LOAD_RENDER
-        #load_flags = FT_LOAD_DEFAULT
+        load_flags = FT_LOAD_RENDER
         err = FT_Load_Glyph(face, glyph_index, load_flags)
         if err != 0
             error("Failed to load glyph for '$emoji': error code $err")
@@ -156,10 +151,8 @@ ft_library = Ref{FT_Library}()
         metrics = glyph_slot.metrics
 
         img = nothing
-        if bitmap.pixel_mode == FT_PIXEL_MODE_BGRA
-            # Color bitmap with pre-multiplied alpha (BGRA format)
-            img = render_bgra_bitmap(bitmap)
-        elseif bitmap.pixel_mode == FT_PIXEL_MODE_GRAY
+
+        if bitmap.pixel_mode == FT_PIXEL_MODE_GRAY
             # Grayscale bitmap (8-bit per pixel)
             width = Int(bitmap.width)
             height = Int(bitmap.rows)
