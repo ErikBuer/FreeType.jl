@@ -58,6 +58,7 @@ error = FT_Init_FreeType(library)
 end
 
 include("render_word.jl")
+include("render_emoji.jl")
 
 # since there are no meaningful tests, please manually do a test for FreeTypeAbstraction
 # using FreeTypeAbstraction
