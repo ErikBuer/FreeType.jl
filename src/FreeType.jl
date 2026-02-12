@@ -945,7 +945,7 @@ end
 
 const FT_OpaquePaint = FT_OpaquePaint_
 
-@enum FT_PaintFormat_::UInt32 begin
+@cenum FT_PaintFormat_::UInt32 begin
     FT_COLR_PAINTFORMAT_COLR_LAYERS = 1
     FT_COLR_PAINTFORMAT_SOLID = 2
     FT_COLR_PAINTFORMAT_LINEAR_GRADIENT = 4
@@ -988,7 +988,7 @@ end
 
 const FT_ColorIndex = FT_ColorIndex_
 
-@enum FT_PaintExtend_::UInt32 begin
+@cenum FT_PaintExtend_::UInt32 begin
     FT_COLR_PAINT_EXTEND_PAD = 0
     FT_COLR_PAINT_EXTEND_REPEAT = 1
     FT_COLR_PAINT_EXTEND_REFLECT = 2
@@ -1087,7 +1087,7 @@ struct FT_PaintSkew_
     center_y::FT_Fixed
 end
 
-@enum FT_Composite_Mode_::UInt32 begin
+@cenum FT_Composite_Mode_::UInt32 begin
     FT_COLR_COMPOSITE_CLEAR = 0
     FT_COLR_COMPOSITE_SRC = 1
     FT_COLR_COMPOSITE_DEST = 2
@@ -1214,10 +1214,10 @@ end
 function get_composite(paint::FT_COLR_Paint)
     base_ptr = pointer_from_objref(Ref(paint))
     union_ptr = Ptr{FT_PaintComposite_}(base_ptr + 8)
-    unsafe_load(union_ptr)
+    unsafe_load(union_ptr)s
 end
 
-@enum FT_Color_Root_Transform_::UInt32 begin
+@cenum FT_Color_Root_Transform_::UInt32 begin
     FT_COLOR_INCLUDE_ROOT_TRANSFORM = 0
     FT_COLOR_NO_ROOT_TRANSFORM = 1
     FT_COLOR_ROOT_TRANSFORM_MAX = 2
