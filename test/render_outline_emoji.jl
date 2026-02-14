@@ -1,4 +1,3 @@
-#using libpng_jll
 using FreeType
 using Images
 using Test
@@ -75,39 +74,6 @@ ft_library = Ref{FT_Library}()
         return best_match
     end
 
-    # Render BGRA color bitmap
-    function render_bgra_bitmap(bitmap::FT_Bitmap)
-        width = Int(bitmap.width)
-        height = Int(bitmap.rows)
-        pitch = Int(bitmap.pitch)
-
-        # Create RGBA image
-        img = Array{RGBA{N0f8}}(undef, height, width)
-
-        row_ptr = bitmap.buffer
-        for r in 1:height
-            # Each pixel is 4 bytes: B, G, R, A
-            row_data = unsafe_wrap(Array, row_ptr, width * 4)
-
-            for c in 1:width
-                offset = (c - 1) * 4
-                b = row_data[offset+1]
-                g = row_data[offset+2]
-                r = row_data[offset+3]
-                a = row_data[offset+4]
-
-                # Note: FreeType uses pre-multiplied alpha
-                # For display, we need to un-premultiply (or keep as-is for correct blending)
-                # Here we'll keep it as-is since RGBA can handle it
-                img[r, c] = RGBA{N0f8}(r / 255, g / 255, b / 255, a / 255)
-            end
-
-            row_ptr += pitch
-        end
-
-        return img
-    end
-
     # Initialize FreeType
     err = FT_Init_FreeType(ft_library)
     if err != 0
@@ -178,12 +144,10 @@ ft_library = Ref{FT_Library}()
         end
 
         if img !== nothing
-            output_file = "emoji_$(i)_U+$(string(UInt32(emoji), base=16, pad=4)).png"
+            output_file = "output/emoji_$(i)_U+$(string(UInt32(emoji), base=16, pad=4)).png"
             Images.save(output_file, img)
         end
     end
 
     FT_Done_FreeType(ft_library[])
-
-
 end

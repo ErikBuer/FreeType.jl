@@ -45,52 +45,6 @@ using Test
                 return colors
             end
         end
-
-        # Fallback: generate a default palette if CPAL loading fails
-        println("  Using default color palette (CPAL not available)")
-
-        colors = Tuple{Float64,Float64,Float64,Float64}[]
-
-        # Add some common colors
-        push!(colors, (0.0, 0.0, 0.0, 1.0))      # Black
-        push!(colors, (1.0, 1.0, 1.0, 1.0))      # White
-        push!(colors, (1.0, 0.0, 0.0, 1.0))      # Red
-        push!(colors, (0.0, 1.0, 0.0, 1.0))      # Green
-        push!(colors, (0.0, 0.0, 1.0, 1.0))      # Blue
-        push!(colors, (1.0, 1.0, 0.0, 1.0))      # Yellow
-        push!(colors, (1.0, 0.0, 1.0, 1.0))      # Magenta
-        push!(colors, (0.0, 1.0, 1.0, 1.0))      # Cyan
-
-        # Generate more colors to fill the palette
-        for i in 9:2000
-            h = (i * 37) % 360
-            s = 0.7 + 0.3 * sin(i * 0.1)
-            v = 0.8 + 0.2 * cos(i * 0.2)
-
-            # HSV to RGB conversion
-            c = v * s
-            x = c * (1 - abs(mod(h / 60, 2) - 1))
-            m = v - c
-
-            r, g, b = if h < 60
-                (c, x, 0)
-            elseif h < 120
-                (x, c, 0)
-            elseif h < 180
-                (0, c, x)
-            elseif h < 240
-                (0, x, c)
-            elseif h < 300
-                (x, 0, c)
-            else
-                (c, 0, x)
-            end
-
-            push!(colors, (r + m, g + m, b + m, 1.0))
-        end
-
-
-        return colors
     end
 
     """
@@ -550,11 +504,9 @@ using Test
         destroy(surface)
         FT_Done_Face(face)
         FT_Done_FreeType(ft_library[])
-
-        println("\n🎉 SUCCESS! COLRv1 emoji fully rendered!")
     end
 
-    render_color_emoji('🙅', "emoji_crossed_arms.png", size=512, debug=false)
-    render_color_emoji('🎨', "emoji_artist_palette.png", size=512, debug=false)
-    render_color_emoji('🚀', "emoji_rocket.png", size=512, debug=false)
+    render_color_emoji('🙅', "output/emoji_crossed_arms.png", size=512, debug=false)
+    render_color_emoji('🎨', "output/emoji_artist_palette.png", size=512, debug=false)
+    render_color_emoji('🚀', "output/emoji_rocket.png", size=512, debug=false)
 end

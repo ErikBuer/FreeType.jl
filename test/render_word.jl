@@ -9,15 +9,6 @@ using Images
 ft_library = Ref{FT_Library}()
 
 @testset "Render Word" begin
-
-    # Set the pixel size for rendering
-    function set_pixel_size(face::FT_Face, pixel_size::Int)
-        err = FT_Set_Pixel_Sizes(face, pixel_size, pixel_size)
-        if err != 0
-            error("Failed to set pixel size: error code $err")
-        end
-    end
-
     # Load and render a single character
     function render_char(face::FT_Face, char::Char)
         # Get the glyph index for this character
@@ -59,13 +50,16 @@ ft_library = Ref{FT_Library}()
 
     # Render a word into a matrix
     function render_word(face::FT_Face, word::String, pixel_size::Int=64)
-        set_pixel_size(face, pixel_size)
+
+        err = FT_Set_Pixel_Sizes(face, pixel_size, pixel_size)
+        if err != 0
+            error("Failed to set pixel size: error code $err")
+        end
 
         # First pass: calculate dimensions
         bitmaps = []
         metrics_list = []
         total_width = 0
-        max_height = 0
         max_bearing_y = 0
         min_bearing_y = 0
 
@@ -145,22 +139,9 @@ ft_library = Ref{FT_Library}()
         return canvas
     end
 
-    # Save bitmap using Images.jl
-    function save_bitmap_png(bitmap::Matrix{UInt8}, filename::String)
-        # Convert bitmap to grayscale image
-        # Normalize UInt8 values to [0, 1] range for Gray type
-        img = Gray.(bitmap ./ 255)
-
-        # Save as PNG (no transpose needed, matrix is already height × width)
-        Images.save(filename, img)
-        println("Saved to $filename")
-    end
-
-
     err = FT_Init_FreeType(ft_library)
 
     font_path = joinpath(@__DIR__, "hack_regular.ttf")
-
 
     face_ref = Ref{FT_Face}()
     err = FT_New_Face(ft_library[], font_path, 0, face_ref)
@@ -170,13 +151,15 @@ ft_library = Ref{FT_Library}()
     face = face_ref[]
 
     # Render a word
-    word = "Hello"
+    word = "FreeType"
     pixel_size = 64
 
     bitmap = render_word(face, word, pixel_size)
 
-    output_file = "rendered_word.png"
-    save_bitmap_png(bitmap, output_file)
+    path = "output/rendered_word.png"
+    # Convert bitmap to grayscale image
+    img = Gray.(bitmap ./ 255)
+    Images.save(path, img)
 
     # Clean up
     FT_Done_Face(face)
