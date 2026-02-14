@@ -1,6 +1,7 @@
 using Test
 
 @testset "Render COLRv1 Emoji" begin
+    using Downloads
     using FreeType
     using Cairo
 
@@ -430,10 +431,10 @@ using Test
             error("Failed to initialize FreeType: $err")
         end
 
-        # Load font
-        font_path = joinpath(@__DIR__, "Noto-COLRv1.ttf")
+        font_path = joinpath(@__DIR__, "output/Noto-COLRv1.ttf")
         if !isfile(font_path)
-            error("Font not found: $font_path")
+            @warn "Font not found: $font_path. Downloading Noto-COLRv1.ttf..."
+            Downloads.download("https://github.com/googlefonts/noto-emoji/raw/refs/heads/main/fonts/Noto-COLRv1.ttf", "output/Noto-COLRv1.ttf")
         end
 
         face_ref = Ref{FT_Face}()
