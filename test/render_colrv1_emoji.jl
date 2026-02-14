@@ -393,11 +393,9 @@ using Test
     Recursively traverse and print the paint tree structure with full union extraction!
     """
     function walk_paint_tree(face::FT_Face, opaque_paint::FT_OpaquePaint, depth::Int=0)
-        indent = "  "^depth
-
         # Safety: prevent infinite recursion
         if depth > 128
-            println("$(indent)!!! Max depth reached")
+            @warn "Reached maximum paint tree depth, stopping recursion to prevent infinite loop"
             return
         end
 
@@ -406,7 +404,7 @@ using Test
         result = FT_Get_Paint(face, opaque_paint, paint_ref)
 
         if result == 0
-            println("$(indent)Failed to get paint data")
+            error("Failed to get paint data at depth $depth")
             return
         end
 
@@ -535,8 +533,29 @@ using Test
             error("Glyph not found for character: $emoji")
         end
 
+        # Load glyph to get metrics
+        scale_factor = 1.0
+        horiAdvance_px = 0.0
+        baseline_offset = 0.0
 
-        # Get COLRv1 paint
+        err = FT_Load_Glyph(face, glyph_index, FT_LOAD_DEFAULT)
+        if err == 0
+            glyph_slot = unsafe_load(unsafe_load(face).glyph)
+            metrics = glyph_slot.metrics
+
+            # Convert from 1/64th pixel units to pixels
+            horiAdvance_px = metrics.horiAdvance / 64.0
+
+            # Calculate scale factor based on horizontal advance
+            if horiAdvance_px > 0
+                scale_factor = size / horiAdvance_px
+            end
+
+            # Hacky centering of emoji. Simple 20% offset
+            canvas_height_font_units = size / scale_factor
+            baseline_offset = canvas_height_font_units * 0.20
+        end
+
         opaque_paint = Ref{FT_OpaquePaint}(FT_OpaquePaint_(C_NULL, 0))
         result = FT_Get_Color_Glyph_Paint(
             face,
@@ -547,7 +566,6 @@ using Test
         if result == 0
             error("No COLRv1 paint found for this glyph")
         end
-
 
         # Create Cairo surface
         surface = CairoARGBSurface(size, size)
@@ -561,6 +579,14 @@ using Test
         # Flip Y axis (FreeType uses bottom-left origin, Cairo uses top-left)
         translate(cr, 0, size)
         scale(cr, 1, -1)
+
+        # Apply scale factor to fit emoji based on horizontal advance
+        scale(cr, scale_factor, scale_factor)
+
+        # Center the glyph vertically by positioning the baseline
+        if baseline_offset != 0.0
+            translate(cr, 0, baseline_offset)
+        end
 
         # Load color palette
         palette = get_color_palette(face, 0)
