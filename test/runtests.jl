@@ -59,7 +59,7 @@ end
 
 include("render_word.jl")
 include("render_outline_emoji.jl")
-include("render_colrv1_emoji.jl") #TODO test require installed font.
+include("render_colrv1_emoji.jl")
 
 # since there are no meaningful tests, please manually do a test for FreeTypeAbstraction
 # using FreeTypeAbstraction
