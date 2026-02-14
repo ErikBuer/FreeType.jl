@@ -1243,6 +1243,10 @@ function FT_Outline_Get_CBox(outline, acbox)
     ccall((:FT_Outline_Get_CBox, libfreetype), Cvoid, (Ptr{FT_Outline}, Ptr{FT_BBox}), outline, acbox)
 end
 
+function FT_Outline_Get_BBox(outline, abbox)
+    ccall((:FT_Outline_Get_BBox, libfreetype), FT_Error, (Ptr{FT_Outline}, Ptr{FT_BBox}), outline, abbox)
+end
+
 function FT_Outline_Translate(outline, xOffset, yOffset)
     ccall((:FT_Outline_Translate, libfreetype), Cvoid, (Ptr{FT_Outline}, FT_Pos, FT_Pos), outline, xOffset, yOffset)
 end
