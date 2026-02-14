@@ -5,6 +5,85 @@ using Test
     using FreeType
     using Cairo
 
+    function get_transform(paint::FT_COLR_Paint)
+        # Get pointer to the beginning of the paint struct, then offset to the union field
+        base_ptr = pointer_from_objref(Ref(paint))
+        union_ptr = Ptr{FT_PaintTransform_}(base_ptr + 8)  # Skip 4-byte format enum + 4-byte padding
+        unsafe_load(union_ptr)
+    end
+
+    function get_translate(paint::FT_COLR_Paint)
+        base_ptr = pointer_from_objref(Ref(paint))
+        union_ptr = Ptr{FT_PaintTranslate_}(base_ptr + 8)
+        unsafe_load(union_ptr)
+    end
+
+    function get_scale(paint::FT_COLR_Paint)
+        base_ptr = pointer_from_objref(Ref(paint))
+        union_ptr = Ptr{FT_PaintScale_}(base_ptr + 8)
+        unsafe_load(union_ptr)
+    end
+
+    function get_rotate(paint::FT_COLR_Paint)
+        base_ptr = pointer_from_objref(Ref(paint))
+        union_ptr = Ptr{FT_PaintRotate_}(base_ptr + 8)
+        unsafe_load(union_ptr)
+    end
+
+    function get_skew(paint::FT_COLR_Paint)
+        base_ptr = pointer_from_objref(Ref(paint))
+        union_ptr = Ptr{FT_PaintSkew_}(base_ptr + 8)
+        unsafe_load(union_ptr)
+    end
+
+    function get_solid(paint::FT_COLR_Paint)
+        base_ptr = pointer_from_objref(Ref(paint))
+        union_ptr = Ptr{FT_PaintSolid_}(base_ptr + 8)
+        unsafe_load(union_ptr)
+    end
+
+    function get_linear_gradient(paint::FT_COLR_Paint)
+        base_ptr = pointer_from_objref(Ref(paint))
+        union_ptr = Ptr{FT_PaintLinearGradient_}(base_ptr + 8)
+        unsafe_load(union_ptr)
+    end
+
+    function get_radial_gradient(paint::FT_COLR_Paint)
+        base_ptr = pointer_from_objref(Ref(paint))
+        union_ptr = Ptr{FT_PaintRadialGradient_}(base_ptr + 8)
+        unsafe_load(union_ptr)
+    end
+
+    function get_sweep_gradient(paint::FT_COLR_Paint)
+        base_ptr = pointer_from_objref(Ref(paint))
+        union_ptr = Ptr{FT_PaintSweepGradient_}(base_ptr + 8)
+        unsafe_load(union_ptr)
+    end
+
+    function get_glyph(paint::FT_COLR_Paint)
+        base_ptr = pointer_from_objref(Ref(paint))
+        union_ptr = Ptr{FT_PaintGlyph_}(base_ptr + 8)
+        unsafe_load(union_ptr)
+    end
+
+    function get_colr_glyph(paint::FT_COLR_Paint)
+        base_ptr = pointer_from_objref(Ref(paint))
+        union_ptr = Ptr{FT_PaintColrGlyph_}(base_ptr + 8)
+        unsafe_load(union_ptr)
+    end
+
+    function get_colr_layers(paint::FT_COLR_Paint)
+        base_ptr = pointer_from_objref(Ref(paint))
+        union_ptr = Ptr{FT_PaintColrLayers_}(base_ptr + 8)
+        unsafe_load(union_ptr)
+    end
+
+    function get_composite(paint::FT_COLR_Paint)
+        base_ptr = pointer_from_objref(Ref(paint))
+        union_ptr = Ptr{FT_PaintComposite_}(base_ptr + 8)
+        unsafe_load(union_ptr)s
+    end
+
     """
     Render context for COLRv1 emoji rendering.
     """
@@ -217,7 +296,7 @@ using Test
 
         try
             if fmt == FT_COLR_PAINTFORMAT_TRANSFORM
-                transform = FreeType.get_transform(paint)
+                transform = get_transform(paint)
                 # Apply affine transform
                 xx = transform.affine.xx / 65536.0
                 xy = transform.affine.xy / 65536.0
@@ -239,12 +318,12 @@ using Test
                 render_paint_tree(ctx, transform.paint, depth + 1)
 
             elseif fmt == FT_COLR_PAINTFORMAT_TRANSLATE
-                translate = FreeType.get_translate(paint)
+                translate = get_translate(paint)
                 Cairo.translate(ctx.cr, translate.dx / 65536.0, translate.dy / 65536.0)
                 render_paint_tree(ctx, translate.paint, depth + 1)
 
             elseif fmt == FT_COLR_PAINTFORMAT_SCALE
-                scale_paint = FreeType.get_scale(paint)
+                scale_paint = get_scale(paint)
                 sx = scale_paint.scale_x / 65536.0
                 sy = scale_paint.scale_y / 65536.0
                 cx = scale_paint.center_x / 65536.0
@@ -255,7 +334,7 @@ using Test
                 render_paint_tree(ctx, scale_paint.paint, depth + 1)
 
             elseif fmt == FT_COLR_PAINTFORMAT_ROTATE
-                rotate = FreeType.get_rotate(paint)
+                rotate = get_rotate(paint)
                 angle = rotate.angle / 65536.0 * π
                 cx = rotate.center_x / 65536.0
                 cy = rotate.center_y / 65536.0
@@ -265,23 +344,23 @@ using Test
                 render_paint_tree(ctx, rotate.paint, depth + 1)
 
             elseif fmt == FT_COLR_PAINTFORMAT_SOLID
-                solid = FreeType.get_solid(paint)
+                solid = get_solid(paint)
                 render_solid(ctx, solid)
 
             elseif fmt == FT_COLR_PAINTFORMAT_GLYPH
-                glyph = FreeType.get_glyph(paint)
+                glyph = get_glyph(paint)
                 render_glyph(ctx, glyph, depth)
 
             elseif fmt == FT_COLR_PAINTFORMAT_LINEAR_GRADIENT
-                gradient = FreeType.get_linear_gradient(paint)
+                gradient = get_linear_gradient(paint)
                 render_linear_gradient(ctx, gradient)
 
             elseif fmt == FT_COLR_PAINTFORMAT_RADIAL_GRADIENT
-                gradient = FreeType.get_radial_gradient(paint)
+                gradient = get_radial_gradient(paint)
                 render_radial_gradient(ctx, gradient)
 
             elseif fmt == FT_COLR_PAINTFORMAT_COLR_LAYERS
-                layers = FreeType.get_colr_layers(paint)
+                layers = get_colr_layers(paint)
                 layer_paint = Ref{FT_OpaquePaint}()
                 iter = Ref(layers.layer_iterator)
 
@@ -292,7 +371,7 @@ using Test
                 end
 
             elseif fmt == FT_COLR_PAINTFORMAT_COLR_GLYPH
-                colr_glyph = FreeType.get_colr_glyph(paint)
+                colr_glyph = get_colr_glyph(paint)
                 sub_opaque = Ref{FT_OpaquePaint}(FT_OpaquePaint_(C_NULL, 0))
                 if FT_Get_Color_Glyph_Paint(ctx.face, colr_glyph.glyphID,
                     FT_COLOR_NO_ROOT_TRANSFORM, sub_opaque) != 0
@@ -300,7 +379,7 @@ using Test
                 end
 
             elseif fmt == FT_COLR_PAINTFORMAT_COMPOSITE
-                composite = FreeType.get_composite(paint)
+                composite = get_composite(paint)
                 # Simple compositing - render backdrop then source
                 render_paint_tree(ctx, composite.backdrop_paint, depth + 1)
                 render_paint_tree(ctx, composite.source_paint, depth + 1)
@@ -336,7 +415,7 @@ using Test
 
         # Extract union data and recurse into children
         if fmt == FT_COLR_PAINTFORMAT_TRANSFORM
-            transform = FreeType.get_transform(paint)
+            transform = get_transform(paint)
 
             # Convert fixed-point to float for display
             xx = transform.affine.xx / 65536.0
@@ -350,14 +429,14 @@ using Test
             walk_paint_tree(face, transform.paint, depth + 2)
 
         elseif fmt == FT_COLR_PAINTFORMAT_TRANSLATE
-            translate = FreeType.get_translate(paint)
+            translate = get_translate(paint)
             dx = translate.dx / 65536.0
             dy = translate.dy / 65536.0
 
             walk_paint_tree(face, translate.paint, depth + 2)
 
         elseif fmt == FT_COLR_PAINTFORMAT_SCALE
-            scale = FreeType.get_scale(paint)
+            scale = get_scale(paint)
             sx = scale.scale_x / 65536.0
             sy = scale.scale_y / 65536.0
             cx = scale.center_x / 65536.0
@@ -366,7 +445,7 @@ using Test
             walk_paint_tree(face, scale.paint, depth + 2)
 
         elseif fmt == FT_COLR_PAINTFORMAT_ROTATE
-            rotate = FreeType.get_rotate(paint)
+            rotate = get_rotate(paint)
             angle = rotate.angle / 65536.0 * 180.0  # Convert to degrees
             cx = rotate.center_x / 65536.0
             cy = rotate.center_y / 65536.0
@@ -374,7 +453,7 @@ using Test
             walk_paint_tree(face, rotate.paint, depth + 2)
 
         elseif fmt == FT_COLR_PAINTFORMAT_SKEW
-            skew = FreeType.get_skew(paint)
+            skew = get_skew(paint)
             x_angle = skew.x_skew_angle / 65536.0 * 180.0
             y_angle = skew.y_skew_angle / 65536.0 * 180.0
             cx = skew.center_x / 65536.0
@@ -383,29 +462,29 @@ using Test
             walk_paint_tree(face, skew.paint, depth + 2)
 
         elseif fmt == FT_COLR_PAINTFORMAT_SOLID
-            solid = FreeType.get_solid(paint)
+            solid = get_solid(paint)
 
         elseif fmt == FT_COLR_PAINTFORMAT_GLYPH
-            glyph = FreeType.get_glyph(paint)
+            glyph = get_glyph(paint)
             walk_paint_tree(face, glyph.paint, depth + 2)
 
         elseif fmt == FT_COLR_PAINTFORMAT_COLR_GLYPH
-            colr_glyph = FreeType.get_colr_glyph(paint)
+            colr_glyph = get_colr_glyph(paint)
 
         elseif fmt == FT_COLR_PAINTFORMAT_LINEAR_GRADIENT
-            gradient = FreeType.get_linear_gradient(paint)
+            gradient = get_linear_gradient(paint)
 
         elseif fmt == FT_COLR_PAINTFORMAT_RADIAL_GRADIENT
-            gradient = FreeType.get_radial_gradient(paint)
+            gradient = get_radial_gradient(paint)
 
         elseif fmt == FT_COLR_PAINTFORMAT_SWEEP_GRADIENT
-            gradient = FreeType.get_sweep_gradient(paint)
+            gradient = get_sweep_gradient(paint)
             start_angle = gradient.start_angle / 65536.0 * 180.0
             end_angle = gradient.end_angle / 65536.0 * 180.0
 
 
         elseif fmt == FT_COLR_PAINTFORMAT_COLR_LAYERS
-            layers = FreeType.get_colr_layers(paint)
+            layers = get_colr_layers(paint)
             # Iterate through layers
             layer_paint = Ref{FT_OpaquePaint}()
             iter = Ref(layers.layer_iterator)
@@ -416,7 +495,7 @@ using Test
             end
 
         elseif fmt == FT_COLR_PAINTFORMAT_COMPOSITE
-            composite = FreeType.get_composite(paint)
+            composite = get_composite(paint)
             walk_paint_tree(face, composite.source_paint, depth + 2)
             walk_paint_tree(face, composite.backdrop_paint, depth + 2)
         end
@@ -465,14 +544,9 @@ using Test
             FT_COLOR_INCLUDE_ROOT_TRANSFORM,
             opaque_paint
         )
-
         if result == 0
             error("No COLRv1 paint found for this glyph")
         end
-
-        # if debug
-        #     walk_paint_tree(face, opaque_paint[], 0)
-        # end
 
 
         # Create Cairo surface
